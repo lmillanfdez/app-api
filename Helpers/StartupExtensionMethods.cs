@@ -16,7 +16,10 @@ static class StartupExtensionMethods
                                             .Get<ConnectionStringsDTO>();
         
         services.AddEntityFrameworkSqlServer()
+                .AddDbContext<IdentityServerDbContext>(options => options.UseSqlServer(_connectionStrings.DefaultConnection))
                 .AddDbContext<ApiDbContext>(options => options.UseSqlServer(_connectionStrings.DefaultConnection));
+
+        services.AddIdentity<User, Role>().AddEntityFrameworkStores<IdentityServerDbContext>();
     }
 
     public static void SetCorsPolicies(this IServiceCollection services)
