@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Appapi.Migrations
 {
-    public partial class initialMigration : Migration
+    public partial class addingTodoEntity : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +15,8 @@ namespace Appapi.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(maxLength: 50, nullable: true),
-                    Completed = table.Column<bool>(nullable: false)
+                    Completed = table.Column<bool>(nullable: false),
+                    CreatedOn = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {

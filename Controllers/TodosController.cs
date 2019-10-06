@@ -1,73 +1,71 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using App_api.Models;
 using System.Threading.Tasks;
-using App_api.Contracts;
+using Microsoft.AspNetCore.Mvc;
 
-namespace App_api.Controllers
+[Produces("application/json")]
+[Route("todos")]
+public class TodosController : ControllerBase
 {
-    [Produces("application/json")]
-    [Route("todos")]
-    public class TodosController : ControllerBase
+    private readonly IBaseRepository<Todo> _todoRepository;
+    
+    public TodosController(IBaseRepository<Todo> todoRepository)
     {
-        private readonly ITodoRepository _todoRepository;
+        _todoRepository = todoRepository;
+    }
+    
+    [HttpGet]
+    [ResponseCache(Duration = 30)]
+    public async Task<IActionResult> GetAll()
+    {
+        var _entities = await _todoRepository.GetAll(false);
+        var _result = new ObjectResult(_entities) { StatusCode = (int)HttpStatusCode.OK };
         
-        public TodosController(ITodoRepository todoRepository)
-        {
-            _todoRepository = todoRepository;
-        }
+        Request.HttpContext.Response.Headers.Add("X-Total-Todos", _entities.Count().ToString());
+
+        return _result;
+    }
+
+    [HttpGet("{id}", Name = "GetTodo")]
+    public async Task<IActionResult> GetTodo([FromRoute] int id)
+    {
+        if (!await _todoRepository.Exists(id, false))
+            return NotFound();
         
-        [HttpGet]
-        [ResponseCache(Duration = 30)]
-        public IActionResult GetAll()
-        {
-            var result = new ObjectResult(_todoRepository.GetAll()) {StatusCode = (int) HttpStatusCode.OK};
-            
-            Request.HttpContext.Response.Headers.Add("X-Total-Todos", 
-                                                                _todoRepository.GetAll().Count().ToString());
+        var resultingTodo = await _todoRepository.Get(id, false);
+        return Ok(resultingTodo);
+    }
 
-            return result;
-        }
+    [HttpPost]
+    public async Task<IActionResult> AddTodo([FromBody] AddTodoDTO todoToAdd)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        [HttpGet("{id}", Name = "GetTodo")]
-        public async Task<IActionResult> GetTodo([FromRoute] int id)
-        {
-            if (!await _todoRepository.ExistsTodo(id))
-                return NotFound();
-            
-            var resultingTodo = await _todoRepository.GetTodo(id);
-            return Ok(resultingTodo);
-        }
+        Todo _todo = new Todo { Description = todoToAdd.Description, CreatedOn = DateTime.UtcNow };
+        
+        await _todoRepository.Add(_todo);
+        
+        return CreatedAtAction("GetTodo", new { id = _todo.Id }, _todo);
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> AddTodo([FromBody] Todo todoToAdd)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            
-            await _todoRepository.AddTodo(todoToAdd);
-            
-            return CreatedAtAction("GetTodo", new { id = todoToAdd.Id }, todoToAdd);
-        }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateTodo([FromBody] Todo todoToUpdate)
+    {
+        await _todoRepository.Update(todoToUpdate);
+        
+        return Ok();
+    }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTodo([FromRoute] int id, [FromBody] Todo todoToUpdate)
-        {
-            await _todoRepository.UpdateTodo(todoToUpdate);
-            
-            return Ok();
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTodo([FromRoute] int id)
+    {
+        var deletedTodo = await _todoRepository.Delete(id);
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodo([FromRoute] int id)
-        {
-            var deletedTodo = await _todoRepository.DeleteTodo(id);
-
-            if (deletedTodo == null)
-                return BadRequest();
-            
-            return Ok(deletedTodo);
-        }
+        if (deletedTodo == null)
+            return BadRequest();
+        
+        return Ok(deletedTodo);
     }
 }
