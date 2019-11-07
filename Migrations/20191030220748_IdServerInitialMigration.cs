@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Appapi.Migrations
 {
-    public partial class addingIdentitySupport : Migration
+    public partial class IdServerInitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

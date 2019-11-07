@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Appapi.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20191006054217_addingTodoEntity")]
-    partial class addingTodoEntity
+    [Migration("20191030214446_initialMigration")]
+    partial class initialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
