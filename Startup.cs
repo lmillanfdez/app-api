@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
+using Newtonsoft.Json;
 
 class Startup
 {
@@ -16,33 +16,24 @@ class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.InjectDependencies();
-        services.InjectServices();
-
-        services.SetAuthenticationSchema(Configuration);
         services.SetCorsPolicies();
         services.SetDbContexts(Configuration);
+
+        services.AddMvc().AddJsonOptions(options =>
+        {
+            options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+        });
 
         services.AddResponseCaching();
         services.AddMemoryCache();
 
-        services.AddSwaggerGen(options => 
-        {
-            options.SwaggerDoc("v1", new Info
-            {
-                Version = "v1",
-                Title = "App API",
-                Description = "Generic Wep API",
-                TermsOfService = "None",
-                Contact = new Contact() 
-                { 
-                    Name = "Liander Millan", 
-                    Email = "lmficr@gmail.com"
-                }
-            });
-        });
-        
-        services.AddMvc();
+        services.AddTestingTools();
+
+        services.SetConfigurations(Configuration);
+        services.SetAuthenticationSchema(Configuration);
+
+        services.InjectDependencies();
+        services.InjectServices();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

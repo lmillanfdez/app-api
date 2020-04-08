@@ -2,5 +2,5 @@ using System.Threading.Tasks;
 
 public interface IAccountsService
 {
-    string CreateToken(User user);
+    Task<UpdateUserResponseDTO> UpdateUser(UpdateUserRequestDTO request);
 }

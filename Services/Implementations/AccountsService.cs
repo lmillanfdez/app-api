@@ -1,43 +1,28 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Options;
 
 public class AccountsService : IAccountsService
 {
-    private readonly IOptions<ConfigurationsDTO> _configs;
+    private readonly IBaseRepository<User> _userRepository;
 
-    public AccountsService(IOptions<ConfigurationsDTO> configs)
+    public AccountsService(IBaseRepository<User> userRepository)
     {
-        _configs = configs;
+        _userRepository = userRepository;
     }
 
-    public string CreateToken(User user)
+    public async Task<UpdateUserResponseDTO> UpdateUser(UpdateUserRequestDTO request)
     {
-        var encodedKey = Encoding.ASCII.GetBytes(_configs.Value.JwtSettings.SecretKey);
-        var signinKey = new SymmetricSecurityKey(encodedKey);
-        var signinCredentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256Signature);
+        var user = await _userRepository.Get(item => item.EmailAddress == request.Email);
 
-        var claims = new []
+        if(user != null)
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Issuer = _configs.Value.JwtSettings.Issuer,
-            Subject = new ClaimsIdentity(claims),
-            SigningCredentials = signinCredentials,
-            Expires = DateTime.Now.AddMinutes(_configs.Value.JwtSettings.TokenLifeTime)
-        };
+            await _userRepository.Update(user);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+            return new UpdateUserResponseDTO{UserId = user.Guid, LastName = user.LastName};
+        }
 
-        return tokenHandler.WriteToken(token);
+        return null;
     }
 }

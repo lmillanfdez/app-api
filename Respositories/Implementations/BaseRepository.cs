@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -22,14 +24,14 @@ public class BaseRepository<Entity> : IBaseRepository<Entity> where Entity : Bas
         return await _set.ToListAsync();
     }
 
-    public async Task<bool> Exists(int id, bool trackEntities = true)
+    public async Task<bool> Exists(Expression<Func<Entity, bool>> predicate, bool trackEntities = true)
     {
         var _set = trackEntities ? Entities : EntitiesAsNoTracking;
 
-        return await _set.AnyAsync(item => item.Id == id);
+        return await _set.AnyAsync(predicate);
     }
 
-    public async Task<Entity> Get(int id, bool trackEntities = true)
+    public async Task<Entity> Get(Expression<Func<Entity, bool>> predicate, bool trackEntities = true)
     {
         /* var inMemoryEntity = _memoryCache.Get<Entity>(id);
 
@@ -38,7 +40,7 @@ public class BaseRepository<Entity> : IBaseRepository<Entity> where Entity : Bas
         
         var _set = trackEntities ? Entities : EntitiesAsNoTracking;
 
-        var retrievedEntity = await _set.SingleOrDefaultAsync(item => item.Id == id);
+        var retrievedEntity = await _set.FirstOrDefaultAsync(predicate);
 
         /* var memoryCacheEntryOption = new MemoryCacheEntryOptions()
                                             .SetSlidingExpiration(TimeSpan.FromSeconds(10));
@@ -63,9 +65,9 @@ public class BaseRepository<Entity> : IBaseRepository<Entity> where Entity : Bas
             await _apiDBContext.SaveChangesAsync();
     }
 
-    public async Task<Entity> Delete(int id, bool saveChanges = true)
+    public async Task<Entity> Delete(Expression<Func<Entity, bool>> predicate, bool saveChanges = true)
     {
-        var entityToDelete = await Entities.SingleOrDefaultAsync(item => item.Id == id);
+        var entityToDelete = await Entities.FirstOrDefaultAsync(predicate);
 
         if (entityToDelete == null)
             return null;

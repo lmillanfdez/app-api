@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-public class RegisterUserRequestDTO
+public class SignUpRequestDTO
 {
     [Required(ErrorMessage = "FirstName field is mandatory")]
     public string FirstName { get; set; }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-public class LoginUserRequestDTO
+public class SignInRequestDTO
 {
     [Required(ErrorMessage = "Email field is mandatory")]
     public string Email { get; set; }

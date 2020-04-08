@@ -1,4 +1,5 @@
 public class ConnectionStringsDTO
 {
-    public string DefaultConnection { get; set; }
+    public string AppDbConnection { get; set; }
+    public string IdentityDbConnection { get; set; }
 }
